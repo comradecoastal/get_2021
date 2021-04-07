@@ -43,6 +43,7 @@ xlabel('Длина волны, нм')
 ylabel(['Интенсивность излучения, эрг/см^2/с/', char(197)])
 text(lambdaStart * 7 / 8 + lambdaEnd / 8, max(max(spectra) * 1.05), 'Карташов Константин Б04-005')
 
+
 grid on
 
 set(fig, 'visible', 'on')
