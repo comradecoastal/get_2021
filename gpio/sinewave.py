@@ -2,15 +2,16 @@ import numpy as np
 import time
 from matplotlib import pyplot as plt
 
-# import RPi.GPIO as gp
+import RPi.GPIO as gp
 
-pins = [24, 25, 8, 7, 12, 16, 20, 21]
+# pins = [24, 25, 8, 7, 12, 16, 20, 21]
+pins = [10, 9, 11, 5, 6, 13, 19, 26]
 
+SAMPLE = 10e-5
 
-#
-# gp.setmode(gp.BCM)
-#
-# gp.setup(pins, gp.OUT)
+gp.setmode(gp.BCM)
+
+gp.setup(pins, gp.OUT)
 
 
 def dec_to_bin_list(val):
@@ -24,7 +25,7 @@ def dec_to_bin_list(val):
 
 def num_dac(val):
     array = dec_to_bin_list(val)
-    # gp.output(pins, array)
+    gp.output(pins, array)
     # print(array)
 
 
@@ -38,7 +39,7 @@ def triangle_wave(delay=0.001):
 
 
 def sine_array(frq, time_val):
-    sample = 10e-6
+    sample = SAMPLE
     time_function = np.round((np.sin(2 * np.pi * frq * np.arange(0, time_val, sample)) + 1) * 255 / 2)
     plt.plot(np.arange(0, time_val, sample), time_function)
     plt.title('Синус')
@@ -55,28 +56,32 @@ def sine_array(frq, time_val):
 def array_play(array):
     for val in array:
         num_dac(val)
-        time.sleep(10e-6)
+        time.sleep(SAMPLE)
 
 
-if __name__ == '__main__':
-    print('To exit enter "-1"')
-    while True:
-        try:
-            time_val = float(input('Please enter the time: '))
-            frq = float(input('Please enter the frequency: '))
-            if time_val == float('inf') or frq == float('inf'):
-                print("Value can't be infinite")
-            elif time_val >= 0 and frq >= 0:
-                array_play(sine_array(frq, time_val))
-            elif time_val == -1 or frq == -1:
+try:
+    if __name__ == '__main__':
+        print('To exit enter "-1"')
+        while True:
+            try:
+                time_val = float(input('Please enter the time: '))
+                frq = float(input('Please enter the frequency: '))
+                if time_val == float('inf') or frq == float('inf'):
+                    print("Value can't be infinite")
+                elif time_val >= 0 and frq >= 0:
+                    array_play(sine_array(frq, time_val))
+                elif time_val == -1 or frq == -1:
+                    num_dac(0)
+                    gp.cleanup()
+                    exit()
+                else:
+                    print('The value entered is out of range.')
+            except ValueError:
+                print('The value entered should be a floating point number.')
+            except KeyboardInterrupt:
                 num_dac(0)
-                # gp.cleanup()
+                gp.cleanup()
                 exit()
-            else:
-                print('The value entered is out of range.')
-        except ValueError:
-            print('The value entered should be a floating point number.')
-        except KeyboardInterrupt:
-            num_dac(0)
-            # gp.cleanup()
-            exit()
+finally:
+    num_dac(0)
+    gp.cleanup()
